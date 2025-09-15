@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dibujo en el Aire - Detección de Movimiento</title>
-    <meta name="description" content="Dibuja en el aire usando la cámara web y detección de movimiento">
-    <meta name="keywords" content="dibujo, cámara, movimiento, arte digital">
     <style>
         * {
             margin: 0;
@@ -14,32 +12,25 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            overflow-x: hidden;
         }
 
         .header {
             text-align: center;
             margin-bottom: 20px;
             color: white;
-            animation: fadeInDown 1s ease-out;
         }
 
         .header h1 {
-            font-size: clamp(1.5em, 4vw, 2.5em);
+            font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: clamp(0.9em, 2vw, 1.1em);
-            opacity: 0.9;
         }
 
         .camera-container {
@@ -50,14 +41,13 @@
             background: black;
             max-width: 800px;
             width: 100%;
-            animation: fadeInUp 1s ease-out;
+            display: none;
         }
 
         #video {
             width: 100%;
             height: auto;
             display: block;
-            border-radius: 20px;
         }
 
         #canvas {
@@ -66,7 +56,6 @@
             left: 0;
             pointer-events: none;
             z-index: 10;
-            border-radius: 20px;
         }
 
         .status {
@@ -79,8 +68,6 @@
             border-radius: 25px;
             font-size: 14px;
             z-index: 20;
-            backdrop-filter: blur(10px);
-            animation: slideInLeft 0.5s ease-out;
         }
 
         .drawing-indicator {
@@ -94,7 +81,6 @@
             z-index: 20;
             opacity: 0;
             transition: opacity 0.3s;
-            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
         }
 
         .drawing-indicator.active {
@@ -103,24 +89,9 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
-            50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(255, 68, 68, 0.8); }
-            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-30px); }
-            to { opacity: 1; transform: translateX(0); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         .controls {
@@ -130,7 +101,6 @@
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            animation: fadeInUp 1.2s ease-out;
         }
 
         .control-group {
@@ -141,11 +111,6 @@
             display: flex;
             gap: 10px;
             align-items: center;
-            transition: transform 0.3s ease;
-        }
-
-        .control-group:hover {
-            transform: translateY(-2px);
         }
 
         button {
@@ -159,17 +124,11 @@
             font-weight: bold;
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
         }
 
         .start-btn {
@@ -188,19 +147,6 @@
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .color-picker:hover {
-            transform: scale(1.1);
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
         }
 
         .slider {
@@ -210,11 +156,6 @@
             background: rgba(255,255,255,0.3);
             outline: none;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .slider:hover {
-            background: rgba(255,255,255,0.4);
         }
 
         .instructions {
@@ -226,106 +167,62 @@
             color: white;
             text-align: center;
             max-width: 600px;
-            animation: fadeInUp 1.4s ease-out;
         }
 
         .instructions h3 {
             margin-bottom: 10px;
             color: #ffd43b;
-            font-size: 1.3em;
         }
 
-        .github-info {
-            margin-top: 20px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
-            text-align: left;
-            max-width: 600px;
-            border: 2px solid rgba(100,255,100,0.3);
-            animation: fadeInUp 1.6s ease-out;
-        }
-
-        .github-info h3 {
-            color: #51cf66;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .github-info ol {
-            margin: 15px 0;
-            padding-left: 20px;
-        }
-
-        .github-info li {
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .github-info code {
-            background: rgba(255,255,255,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .error {
-            background: rgba(255,0,0,0.8);
-            color: white;
+        .error, .success, .info {
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
             text-align: center;
             white-space: pre-line;
-            animation: shake 0.5s ease-in-out;
         }
 
-        @keyframes shake {
-            0%, 20%, 40%, 60%, 80% { transform: translateX(0); }
-            10%, 30%, 50%, 70% { transform: translateX(-5px); }
-            15%, 35%, 55%, 75% { transform: translateX(5px); }
+        .error {
+            background: rgba(255,0,0,0.8);
+            color: white;
         }
 
         .success {
             background: rgba(0,255,0,0.8);
             color: white;
+        }
+
+        .info {
+            background: rgba(0,150,255,0.8);
+            color: white;
+        }
+
+        .debug-info {
+            background: rgba(0,0,0,0.8);
+            color: white;
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
-            text-align: center;
-            animation: fadeIn 0.5s ease-out;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-line;
+            max-height: 300px;
+            overflow-y: auto;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .control-group {
-                justify-content: center;
-            }
-            
-            .camera-container {
-                margin: 0 10px;
-            }
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🎨 Dibujo en el Aire</h1>
-        <p>Dibuja moviendo tu mano frente a la cámara - Optimizado para GitHub Pages</p>
+        <p>Dibuja moviendo tu mano frente a la cámara</p>
     </div>
 
-    <div class="camera-container" id="cameraContainer" style="display: none;">
+    <div class="camera-container" id="cameraContainer">
         <video id="video" autoplay muted playsinline></video>
         <canvas id="canvas"></canvas>
         <div class="status" id="status">Cámara activa - Mueve tu mano para dibujar</div>
@@ -334,281 +231,262 @@
 
     <div class="controls">
         <button id="startBtn" class="start-btn">🎥 Iniciar Cámara</button>
-        <button id="debugBtn" class="clear-btn" style="display: inline-block;">🔧 Diagnóstico</button>
+        <button id="debugBtn" class="clear-btn">🔧 Diagnóstico</button>
         
-        <div class="control-group" id="drawingControls" style="display: none;">
+        <div class="control-group hidden" id="drawingControls">
             <button id="toggleDrawing">✋ Pausar Dibujo</button>
             <button id="clearCanvas" class="clear-btn">🧹 Limpiar</button>
             <button id="saveDrawing">💾 Guardar</button>
         </div>
 
-        <div class="control-group" id="colorControls" style="display: none;">
+        <div class="control-group hidden" id="colorControls">
             <label style="color: white;">Color:</label>
             <input type="color" id="colorPicker" class="color-picker" value="#ff0000">
         </div>
 
-        <div class="control-group" id="sizeControls" style="display: none;">
-            <div class="slider-container">
-                <label>Grosor:</label>
-                <input type="range" id="brushSize" class="slider" min="1" max="20" value="5">
-                <span id="sizeValue">5</span>
-            </div>
+        <div class="control-group hidden" id="sizeControls">
+            <label style="color: white;">Grosor:</label>
+            <input type="range" id="brushSize" class="slider" min="1" max="20" value="5">
+            <span id="sizeValue" style="color: white;">5</span>
         </div>
 
-        <div class="control-group" id="sensitivityControls" style="display: none;">
-            <div class="slider-container">
-                <label>Sensibilidad:</label>
-                <input type="range" id="sensitivity" class="slider" min="10" max="100" value="50">
-                <span id="sensitivityValue">50</span>
-            </div>
+        <div class="control-group hidden" id="sensitivityControls">
+            <label style="color: white;">Sensibilidad:</label>
+            <input type="range" id="sensitivity" class="slider" min="10" max="100" value="50">
+            <span id="sensitivityValue" style="color: white;">50</span>
         </div>
     </div>
 
+    <div id="messageArea"></div>
+
     <div class="instructions">
-        <h3>📋 Instrucciones de Uso:</h3>
+        <h3>📋 Instrucciones:</h3>
         <p><strong>1.</strong> Haz clic en "Iniciar Cámara" y permite el acceso</p>
         <p><strong>2.</strong> Mueve tu mano frente a la cámara para dibujar</p>
         <p><strong>3.</strong> Los movimientos rápidos crean trazos</p>
-        <p><strong>4.</strong> Usa los controles para personalizar tu experiencia</p>
-        <p><strong>5.</strong> El indicador rojo se activa cuando estás dibujando</p>
-    </div>
-
-    <div class="github-info">
-        <h3>🚀 Cómo subir a GitHub Pages (HTTPS garantizado):</h3>
-        <ol>
-            <li><strong>Crear repositorio:</strong>
-                <ul style="margin-top: 5px;">
-                    <li>Ve a <a href="https://github.com" style="color: #51cf66;">github.com</a> y crea una cuenta si no tienes</li>
-                    <li>Haz clic en "New repository"</li>
-                    <li>Nombra tu repositorio: <code>air-drawing-app</code></li>
-                    <li>Marca la opción "Public" y "Add README"</li>
-                </ul>
-            </li>
-            <li><strong>Subir el archivo:</strong>
-                <ul style="margin-top: 5px;">
-                    <li>Copia todo este código HTML</li>
-                    <li>En tu repositorio, haz clic en "Add file" > "Create new file"</li>
-                    <li>Nombra el archivo: <code>index.html</code></li>
-                    <li>Pega todo el código</li>
-                    <li>Haz clic en "Commit new file"</li>
-                </ul>
-            </li>
-            <li><strong>Activar GitHub Pages:</strong>
-                <ul style="margin-top: 5px;">
-                    <li>Ve a "Settings" de tu repositorio</li>
-                    <li>Busca la sección "Pages" en el menú izquierdo</li>
-                    <li>En "Source", selecciona "Deploy from a branch"</li>
-                    <li>Selecciona "main" branch y "/ (root)"</li>
-                    <li>Haz clic en "Save"</li>
-                </ul>
-            </li>
-            <li><strong>Acceder a tu app:</strong>
-                <ul style="margin-top: 5px;">
-                    <li>En unos minutos, tu app estará disponible en:</li>
-                    <li><code>https://tu-usuario.github.io/air-drawing-app</code></li>
-                    <li>¡Con HTTPS automático para que funcione la cámara! 🎉</li>
-                </ul>
-            </li>
-        </ol>
-        <p style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-            <strong>💡 Consejo:</strong> Una vez en GitHub Pages con HTTPS, la aplicación detectará automáticamente tu cámara y funcionará perfectamente.
-        </p>
+        <p><strong>4.</strong> El indicador rojo se activa cuando estás dibujando</p>
     </div>
 
     <script>
-        class AirDrawingApp {
-            constructor() {
+        console.log('🚀 Iniciando aplicación...');
+        
+        let app = {
+            video: null,
+            canvas: null,
+            ctx: null,
+            isDrawing: false,
+            drawingEnabled: true,
+            lastPosition: null,
+            currentColor: '#ff0000',
+            brushSize: 5,
+            sensitivity: 50,
+            motionCanvas: null,
+            motionCtx: null,
+            previousFrame: null,
+            drawingTimeout: null,
+
+            init: function() {
+                console.log('🔧 Inicializando aplicación...');
+                
                 this.video = document.getElementById('video');
                 this.canvas = document.getElementById('canvas');
                 this.ctx = this.canvas.getContext('2d');
-                this.isDrawing = false;
-                this.drawingEnabled = true;
-                this.lastPosition = null;
-                this.currentColor = '#ff0000';
-                this.brushSize = 5;
-                this.sensitivity = 50;
                 
-                // Para detección de movimiento optimizada
                 this.motionCanvas = document.createElement('canvas');
                 this.motionCtx = this.motionCanvas.getContext('2d');
-                this.previousFrame = null;
-                this.frameCount = 0;
                 
                 this.setupEventListeners();
-                this.checkHTTPS();
-            }
+                this.showMessage('info', '✅ Aplicación lista. Haz clic en "Iniciar Cámara"');
+            },
 
-            checkHTTPS() {
-                if (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-                    this.showSuccess('✅ Protocolo seguro detectado. La cámara debería funcionar correctamente.');
-                } else {
-                    this.showError('⚠️ Se requiere HTTPS para la cámara. Sube este archivo a GitHub Pages para obtener HTTPS automático.');
-                }
-            }
-
-            setupEventListeners() {
-                document.getElementById('startBtn').addEventListener('click', () => {
-                    console.log('🔘 Botón Iniciar Cámara presionado');
+            setupEventListeners: function() {
+                console.log('🔗 Configurando eventos...');
+                
+                document.getElementById('startBtn').onclick = () => {
+                    console.log('🎬 Botón Iniciar presionado');
                     this.startCamera();
-                });
-                document.getElementById('debugBtn').addEventListener('click', () => this.runDiagnostic());
-                document.getElementById('toggleDrawing').addEventListener('click', () => this.toggleDrawing());
-                document.getElementById('clearCanvas').addEventListener('click', () => this.clearCanvas());
-                document.getElementById('saveDrawing').addEventListener('click', () => this.saveDrawing());
-                document.getElementById('colorPicker').addEventListener('change', (e) => this.changeColor(e.target.value));
-                document.getElementById('brushSize').addEventListener('input', (e) => this.changeBrushSize(e.target.value));
-                document.getElementById('sensitivity').addEventListener('input', (e) => this.changeSensitivity(e.target.value));
-            }
+                };
+                
+                document.getElementById('debugBtn').onclick = () => {
+                    console.log('🔧 Botón Diagnóstico presionado');
+                    this.runDiagnostic();
+                };
+                
+                document.getElementById('toggleDrawing').onclick = () => this.toggleDrawing();
+                document.getElementById('clearCanvas').onclick = () => this.clearCanvas();
+                document.getElementById('saveDrawing').onclick = () => this.saveDrawing();
+                
+                document.getElementById('colorPicker').onchange = (e) => {
+                    this.currentColor = e.target.value;
+                };
+                
+                document.getElementById('brushSize').oninput = (e) => {
+                    this.brushSize = parseInt(e.target.value);
+                    document.getElementById('sizeValue').textContent = e.target.value;
+                };
+                
+                document.getElementById('sensitivity').oninput = (e) => {
+                    this.sensitivity = parseInt(e.target.value);
+                    document.getElementById('sensitivityValue').textContent = e.target.value;
+                };
+            },
 
-            async runDiagnostic() {
-                console.log('🔧 Iniciando diagnóstico...');
-                let diagnosticInfo = [];
+            showMessage: function(type, message) {
+                const messageArea = document.getElementById('messageArea');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = type;
+                messageDiv.textContent = message;
                 
-                // Información básica
-                diagnosticInfo.push('🌐 **Diagnóstico del Sistema:**\n');
-                diagnosticInfo.push(`Navegador: ${navigator.userAgent}`);
-                diagnosticInfo.push(`Protocolo: ${location.protocol}`);
-                diagnosticInfo.push(`Host: ${location.host}`);
-                diagnosticInfo.push(`URL: ${location.href}`);
+                // Limpiar mensajes anteriores del mismo tipo
+                const existingMessages = messageArea.querySelectorAll('.' + type);
+                existingMessages.forEach(msg => msg.remove());
                 
-                // Verificar soporte de getUserMedia
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    diagnosticInfo.push('✅ getUserMedia soportado');
-                    
-                    // Verificar permisos
-                    if (navigator.permissions) {
-                        try {
-                            const cameraPermission = await navigator.permissions.query({name: 'camera'});
-                            diagnosticInfo.push(`🎥 Permisos de cámara: ${cameraPermission.state}`);
-                        } catch (e) {
-                            diagnosticInfo.push('⚠️ No se pueden verificar permisos');
+                messageArea.appendChild(messageDiv);
+                
+                // Auto-remover después de 5 segundos (excepto errores)
+                if (type !== 'error') {
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            messageDiv.remove();
                         }
-                    }
-                    
-                    // Listar dispositivos disponibles
-                    try {
-                        const devices = await navigator.mediaDevices.enumerateDevices();
-                        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                        diagnosticInfo.push(`📷 Cámaras detectadas: ${videoDevices.length}`);
-                        videoDevices.forEach((device, index) => {
-                            diagnosticInfo.push(`  ${index + 1}. ${device.label || 'Cámara sin nombre'}`);
-                        });
-                    } catch (e) {
-                        diagnosticInfo.push('❌ Error al listar dispositivos: ' + e.message);
-                    }
-                } else {
-                    diagnosticInfo.push('❌ getUserMedia NO soportado');
+                    }, 5000);
                 }
-                
-                this.showDiagnosticResult(diagnosticInfo.join('\n'));
-            }
+            },
 
-            async startCamera() {
+            runDiagnostic: function() {
+                console.log('🔬 Ejecutando diagnóstico...');
+                
+                let info = [];
+                info.push('🔍 DIAGNÓSTICO DEL SISTEMA:');
+                info.push('');
+                info.push('Navegador: ' + navigator.userAgent);
+                info.push('Protocolo: ' + window.location.protocol);
+                info.push('URL: ' + window.location.href);
+                info.push('');
+                
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    info.push('✅ getUserMedia: Soportado');
+                    
+                    navigator.mediaDevices.enumerateDevices()
+                        .then(devices => {
+                            const cameras = devices.filter(device => device.kind === 'videoinput');
+                            info.push('📷 Cámaras detectadas: ' + cameras.length);
+                            
+                            cameras.forEach((camera, index) => {
+                                info.push('  ' + (index + 1) + '. ' + (camera.label || 'Cámara sin nombre'));
+                            });
+                            
+                            if (navigator.permissions) {
+                                navigator.permissions.query({name: 'camera'})
+                                    .then(permission => {
+                                        info.push('🔐 Permisos de cámara: ' + permission.state);
+                                        this.showDebugInfo(info.join('\n'));
+                                    })
+                                    .catch(() => {
+                                        info.push('⚠️ No se pueden verificar permisos');
+                                        this.showDebugInfo(info.join('\n'));
+                                    });
+                            } else {
+                                info.push('⚠️ API de permisos no disponible');
+                                this.showDebugInfo(info.join('\n'));
+                            }
+                        })
+                        .catch(() => {
+                            info.push('❌ Error al enumerar dispositivos');
+                            this.showDebugInfo(info.join('\n'));
+                        });
+                } else {
+                    info.push('❌ getUserMedia: NO soportado');
+                    this.showDebugInfo(info.join('\n'));
+                }
+            },
+
+            showDebugInfo: function(info) {
+                const messageArea = document.getElementById('messageArea');
+                
+                // Remover diagnósticos anteriores
+                const existingDebug = messageArea.querySelectorAll('.debug-info');
+                existingDebug.forEach(debug => debug.remove());
+                
+                const debugDiv = document.createElement('div');
+                debugDiv.className = 'debug-info';
+                debugDiv.textContent = info;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '❌ Cerrar';
+                closeBtn.style.marginTop = '10px';
+                closeBtn.onclick = () => debugDiv.remove();
+                
+                debugDiv.appendChild(closeBtn);
+                messageArea.appendChild(debugDiv);
+                
+                console.log(info);
+            },
+
+            startCamera: function() {
+                console.log('🎬 Iniciando cámara...');
+                
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    this.showError('❌ Tu navegador no soporta acceso a la cámara.\n\nNavegadores compatibles: Chrome, Firefox, Edge (versiones recientes)');
+                    this.showMessage('error', '❌ Tu navegador no soporta acceso a la cámara.\n\nUsa Chrome, Firefox o Edge actualizado.');
                     return;
                 }
 
-                this.showStatus('🔄 Solicitando acceso a la cámara...\nBusca el ícono de cámara en la barra de direcciones.');
+                this.showMessage('info', '🔄 Solicitando acceso a la cámara...\n\nSi aparece una notificación, haz clic en "Permitir"');
 
-                try {
-                    // Verificar permisos primero
-                    if (navigator.permissions) {
-                        try {
-                            const permission = await navigator.permissions.query({name: 'camera'});
-                            if (permission.state === 'denied') {
-                                this.showError('🚫 Acceso a la cámara denegado.\n\nPasos para solucionarlo:\n1. Busca el ícono 🎥 en la barra de direcciones\n2. Haz clic y selecciona "Permitir"\n3. Recarga la página');
-                                this.hideStatus();
-                                return;
-                            }
-                        } catch (e) {
-                            // Ignorar errores de permisos en navegadores que no lo soportan
-                        }
+                const constraints = {
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
                     }
+                };
 
-                    // Configuración optimizada para mejor compatibilidad
-                    const constraints = {
-                        video: {
-                            width: { ideal: 800, min: 320, max: 1280 },
-                            height: { ideal: 600, min: 240, max: 720 },
-                            facingMode: 'user',
-                            frameRate: { ideal: 30, min: 15 }
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(stream => {
+                        console.log('✅ Stream obtenido');
+                        
+                        this.video.srcObject = stream;
+                        
+                        this.video.onloadedmetadata = () => {
+                            console.log('📺 Metadata cargada');
+                            this.video.play();
+                            this.setupCanvas();
+                            this.startMotionDetection();
+                            this.showControls();
+                            this.showMessage('success', '✅ ¡Cámara conectada! Mueve tu mano para dibujar.');
+                        };
+                        
+                        this.video.onerror = (e) => {
+                            console.error('❌ Error de video:', e);
+                            this.showMessage('error', '❌ Error al reproducir el video de la cámara');
+                        };
+                    })
+                    .catch(err => {
+                        console.error('🚫 Error de cámara:', err);
+                        
+                        let errorMsg = '❌ Error: ' + err.name;
+                        
+                        switch(err.name) {
+                            case 'NotAllowedError':
+                                errorMsg = '🚫 Acceso denegado.\n\nSOLUCIÓN:\n1. Haz clic en el candado 🔒 junto a la URL\n2. Cambia "Cámara" a "Permitir"\n3. Recarga la página (F5)';
+                                break;
+                            case 'NotFoundError':
+                                errorMsg = '📷 No se encontró cámara.\n\nVerifica:\n• ¿Tienes cámara conectada?\n• ¿Funciona en otras apps?\n• ¿Es laptop? Revisa teclas Fn';
+                                break;
+                            case 'NotReadableError':
+                                errorMsg = '⚠️ Cámara ocupada.\n\nCierra:\n• Zoom, Teams, Skype\n• Otras pestañas del navegador\n• Reinicia el navegador';
+                                break;
+                            default:
+                                errorMsg = '❌ Error: ' + err.message + '\n\nPrueba:\n• Recargar la página\n• Usar modo incógnito\n• Cambiar de navegador';
                         }
-                    };
+                        
+                        this.showMessage('error', errorMsg);
+                    });
+            },
 
-                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    
-                    this.video.srcObject = stream;
-                    
-                    this.video.onloadedmetadata = () => {
-                        this.video.play();
-                        this.setupCanvas();
-                        this.startMotionDetection();
-                        this.showControls();
-                        this.hideStartButton();
-                        this.showCameraContainer();
-                        this.hideStatus();
-                        this.showSuccess('✅ ¡Cámara conectada exitosamente! Mueve tu mano para dibujar.');
-                    };
-
-                    this.video.onerror = () => {
-                        this.showError('❌ Error al inicializar el video de la cámara.');
-                        this.hideStatus();
-                    };
-
-                } catch (err) {
-                    console.error('Camera access error:', err);
-                    
-                    let errorMessage = '❌ Error desconocido al acceder a la cámara.';
-                    
-                    switch(err.name) {
-                        case 'NotAllowedError':
-                        case 'PermissionDeniedError':
-                            errorMessage = '🚫 Acceso denegado.\n\nSoluciones:\n1. Busca el ícono 🎥 en la barra de direcciones\n2. Haz clic y selecciona "Permitir"\n3. Si no aparece, ve a Configuración > Privacidad > Cámara\n4. Recarga la página y reintenta';
-                            break;
-                        case 'NotFoundError':
-                        case 'DevicesNotFoundError':
-                            errorMessage = '📷 No se encontró cámara.\n\nVerifica:\n1. Que tu cámara esté conectada\n2. Que funcione en otras aplicaciones\n3. Que no esté siendo usada por otro programa';
-                            break;
-                        case 'NotReadableError':
-                        case 'TrackStartError':
-                            errorMessage = '⚠️ Cámara ocupada.\n\nSoluciones:\n1. Cierra otras aplicaciones que usen la cámara\n2. Reinicia tu navegador\n3. Desconecta y reconecta la cámara USB (si aplica)';
-                            break;
-                        case 'OverconstrainedError':
-                            errorMessage = '⚙️ Configuración no compatible.\n\nIntentando con configuración básica...';
-                            // Intentar con configuración más simple
-                            try {
-                                const basicStream = await navigator.mediaDevices.getUserMedia({ 
-                                    video: { width: 640, height: 480 } 
-                                });
-                                this.video.srcObject = basicStream;
-                                this.video.onloadedmetadata = () => {
-                                    this.video.play();
-                                    this.setupCanvas();
-                                    this.startMotionDetection();
-                                    this.showControls();
-                                    this.hideStartButton();
-                                    this.showCameraContainer();
-                                    this.hideStatus();
-                                    this.showSuccess('✅ Cámara conectada con configuración básica.');
-                                };
-                                return;
-                            } catch (basicErr) {
-                                errorMessage = '❌ No se pudo configurar la cámara con ninguna resolución.';
-                            }
-                            break;
-                        case 'SecurityError':
-                            errorMessage = '🔒 Error de seguridad.\n\nAsegúrate de estar usando:\n1. HTTPS (recomendado: GitHub Pages)\n2. Un navegador moderno\n3. Una conexión segura';
-                            break;
-                    }
-                    
-                    this.showError(errorMessage);
-                    this.hideStatus();
-                }
-            }
-
-            setupCanvas() {
-                const rect = this.video.getBoundingClientRect();
+            setupCanvas: function() {
+                console.log('🎨 Configurando canvas...');
+                
                 this.canvas.width = this.video.videoWidth;
                 this.canvas.height = this.video.videoHeight;
                 this.motionCanvas.width = this.video.videoWidth;
@@ -616,21 +494,16 @@
                 
                 this.ctx.lineJoin = 'round';
                 this.ctx.lineCap = 'round';
-                this.ctx.globalAlpha = 0.9;
-                this.ctx.shadowBlur = 2;
-                this.ctx.shadowColor = 'rgba(0,0,0,0.3)';
-            }
+                this.ctx.globalAlpha = 0.8;
+                
+                document.getElementById('cameraContainer').style.display = 'block';
+            },
 
-            startMotionDetection() {
+            startMotionDetection: function() {
+                console.log('👋 Iniciando detección de movimiento...');
+                
                 const detectMotion = () => {
                     if (this.video.videoWidth === 0 || this.video.paused) {
-                        requestAnimationFrame(detectMotion);
-                        return;
-                    }
-
-                    // Optimización: procesar solo cada 2 frames para mejor rendimiento
-                    this.frameCount++;
-                    if (this.frameCount % 2 !== 0) {
                         requestAnimationFrame(detectMotion);
                         return;
                     }
@@ -648,9 +521,9 @@
                 };
                 
                 requestAnimationFrame(detectMotion);
-            }
+            },
 
-            calculateMotion(current, previous) {
+            calculateMotion: function(current, previous) {
                 const motionData = {
                     totalMotion: 0,
                     centerX: 0,
@@ -658,13 +531,12 @@
                     motionPixels: 0
                 };
 
-                const threshold = 25; // Umbral más sensible
+                const threshold = 30;
                 let motionX = 0;
                 let motionY = 0;
                 let motionCount = 0;
 
-                // Optimización: saltar píxeles para mejor rendimiento
-                for (let i = 0; i < current.data.length; i += 16) { // Saltar más píxeles
+                for (let i = 0; i < current.data.length; i += 16) {
                     const pixelIndex = i / 4;
                     const x = pixelIndex % this.motionCanvas.width;
                     const y = Math.floor(pixelIndex / this.motionCanvas.width);
@@ -689,24 +561,23 @@
                 }
 
                 return motionData;
-            }
+            },
 
-            processMotion(motionData) {
-                const minMotion = this.sensitivity * 8; // Sensibilidad mejorada
-                const isSignificantMotion = motionData.totalMotion > minMotion && motionData.motionPixels > 50;
+            processMotion: function(motionData) {
+                const minMotion = this.sensitivity * 10;
+                const isSignificantMotion = motionData.totalMotion > minMotion && motionData.motionPixels > 100;
                 
                 if (isSignificantMotion) {
                     const x = motionData.centerX;
                     const y = motionData.centerY;
                     
                     if (this.lastPosition && this.isDrawing) {
-                        // Suavizar el trazo
                         const distance = Math.sqrt(
                             Math.pow(x - this.lastPosition.x, 2) + 
                             Math.pow(y - this.lastPosition.y, 2)
                         );
                         
-                        if (distance < 200) { // Evitar saltos muy grandes
+                        if (distance < 200) {
                             this.drawLine(this.lastPosition.x, this.lastPosition.y, x, y);
                         }
                     }
@@ -724,36 +595,45 @@
                         this.isDrawing = false;
                         this.lastPosition = null;
                         this.showDrawingIndicator(false);
-                    }, 150); // Timeout más corto para mejor respuesta
+                    }, 200);
                 }
-            }
+            },
 
-            resetDrawingTimeout() {
+            resetDrawingTimeout: function() {
                 if (this.drawingTimeout) {
                     clearTimeout(this.drawingTimeout);
                 }
-            }
+            },
 
-            drawLine(x1, y1, x2, y2) {
+            drawLine: function(x1, y1, x2, y2) {
                 this.ctx.beginPath();
                 this.ctx.moveTo(x1, y1);
                 this.ctx.lineTo(x2, y2);
                 this.ctx.strokeStyle = this.currentColor;
                 this.ctx.lineWidth = this.brushSize;
-                this.ctx.shadowColor = this.currentColor;
                 this.ctx.stroke();
-            }
+            },
 
-            showDrawingIndicator(show) {
+            showDrawingIndicator: function(show) {
                 const indicator = document.getElementById('drawingIndicator');
                 if (show) {
                     indicator.classList.add('active');
                 } else {
                     indicator.classList.remove('active');
                 }
-            }
+            },
 
-            toggleDrawing() {
+            showControls: function() {
+                console.log('🎮 Mostrando controles...');
+                document.getElementById('drawingControls').classList.remove('hidden');
+                document.getElementById('colorControls').classList.remove('hidden');
+                document.getElementById('sizeControls').classList.remove('hidden');
+                document.getElementById('sensitivityControls').classList.remove('hidden');
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('debugBtn').style.display = 'none';
+            },
+
+            toggleDrawing: function() {
                 this.drawingEnabled = !this.drawingEnabled;
                 const btn = document.getElementById('toggleDrawing');
                 if (this.drawingEnabled) {
@@ -765,13 +645,14 @@
                     this.isDrawing = false;
                     this.showDrawingIndicator(false);
                 }
-            }
+            },
 
-            clearCanvas() {
+            clearCanvas: function() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
+                this.showMessage('info', '🧹 Canvas limpiado');
+            },
 
-            saveDrawing() {
+            saveDrawing: function() {
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = this.canvas.width;
                 tempCanvas.height = this.canvas.height;
@@ -781,5 +662,36 @@
                 tempCtx.drawImage(this.canvas, 0, 0);
                 
                 const link = document.createElement('a');
-                link.download = `dibujo-aire-${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.png`;
-                link.href = tempCanvas.toDataURL('image/png
+                link.download = 'dibujo-aire-' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.png';
+                link.href = tempCanvas.toDataURL('image/png');
+                link.click();
+                
+                this.showMessage('success', '💾 Imagen guardada');
+            }
+        };
+
+        // Inicializar cuando se carga la página
+        window.onload = function() {
+            console.log('📄 Página cargada, inicializando app...');
+            app.init();
+        };
+
+        // Manejo de errores globales
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('💥 Error JavaScript:', {
+                mensaje: msg,
+                archivo: url,
+                linea: lineNo,
+                columna: columnNo,
+                error: error
+            });
+            
+            if (app && app.showMessage) {
+                app.showMessage('error', '💥 Error de JavaScript: ' + msg + '\n\nRecarga la página (F5)');
+            }
+            
+            return false;
+        };
+    </script>
+</body>
+</html>
