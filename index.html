@@ -334,6 +334,7 @@
 
     <div class="controls">
         <button id="startBtn" class="start-btn">🎥 Iniciar Cámara</button>
+        <button id="debugBtn" class="clear-btn" style="display: inline-block;">🔧 Diagnóstico</button>
         
         <div class="control-group" id="drawingControls" style="display: none;">
             <button id="toggleDrawing">✋ Pausar Dibujo</button>
@@ -446,13 +447,60 @@
             }
 
             setupEventListeners() {
-                document.getElementById('startBtn').addEventListener('click', () => this.startCamera());
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    console.log('🔘 Botón Iniciar Cámara presionado');
+                    this.startCamera();
+                });
+                document.getElementById('debugBtn').addEventListener('click', () => this.runDiagnostic());
                 document.getElementById('toggleDrawing').addEventListener('click', () => this.toggleDrawing());
                 document.getElementById('clearCanvas').addEventListener('click', () => this.clearCanvas());
                 document.getElementById('saveDrawing').addEventListener('click', () => this.saveDrawing());
                 document.getElementById('colorPicker').addEventListener('change', (e) => this.changeColor(e.target.value));
                 document.getElementById('brushSize').addEventListener('input', (e) => this.changeBrushSize(e.target.value));
                 document.getElementById('sensitivity').addEventListener('input', (e) => this.changeSensitivity(e.target.value));
+            }
+
+            async runDiagnostic() {
+                console.log('🔧 Iniciando diagnóstico...');
+                let diagnosticInfo = [];
+                
+                // Información básica
+                diagnosticInfo.push('🌐 **Diagnóstico del Sistema:**\n');
+                diagnosticInfo.push(`Navegador: ${navigator.userAgent}`);
+                diagnosticInfo.push(`Protocolo: ${location.protocol}`);
+                diagnosticInfo.push(`Host: ${location.host}`);
+                diagnosticInfo.push(`URL: ${location.href}`);
+                
+                // Verificar soporte de getUserMedia
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    diagnosticInfo.push('✅ getUserMedia soportado');
+                    
+                    // Verificar permisos
+                    if (navigator.permissions) {
+                        try {
+                            const cameraPermission = await navigator.permissions.query({name: 'camera'});
+                            diagnosticInfo.push(`🎥 Permisos de cámara: ${cameraPermission.state}`);
+                        } catch (e) {
+                            diagnosticInfo.push('⚠️ No se pueden verificar permisos');
+                        }
+                    }
+                    
+                    // Listar dispositivos disponibles
+                    try {
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+                        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                        diagnosticInfo.push(`📷 Cámaras detectadas: ${videoDevices.length}`);
+                        videoDevices.forEach((device, index) => {
+                            diagnosticInfo.push(`  ${index + 1}. ${device.label || 'Cámara sin nombre'}`);
+                        });
+                    } catch (e) {
+                        diagnosticInfo.push('❌ Error al listar dispositivos: ' + e.message);
+                    }
+                } else {
+                    diagnosticInfo.push('❌ getUserMedia NO soportado');
+                }
+                
+                this.showDiagnosticResult(diagnosticInfo.join('\n'));
             }
 
             async startCamera() {
